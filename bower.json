@@ -12,6 +12,7 @@
     "*.md",
     "*.html",
     "*.ico",
+    "contributedAdd-ons",
     "jsTools",
     "jsXMLParser",
     "pre-builtProxyServers",
