@@ -31,6 +31,8 @@
 // =========================================================================
 // =========================================================================
 // =========================================================================
+
+(function(global) {
 var whitespace = "\n\r\t ";
 
 
@@ -46,7 +48,7 @@ API which other wrappers can be built against.
 *****************************************************************************************************************/
 
 
-XMLP = function(strXML) {
+var XMLP = global["XMLP"] = function(strXML) {
     /*******************************************************************************************************************
     function:   this is the constructor to the XMLP Object
 
@@ -354,27 +356,79 @@ XMLP.prototype._parse = function() {
         return XMLP._NONE;
     }
 
-    if(this.m_iP == this.m_xml.indexOf("<?",        this.m_iP)) {
-        return this._parsePI     (this.m_iP + 2);
-    }
-    else if(this.m_iP == this.m_xml.indexOf("<!DOCTYPE", this.m_iP)) {
-        return this._parseDTD    (this.m_iP + 9);
-    }
-    else if(this.m_iP == this.m_xml.indexOf("<!--",      this.m_iP)) {
-        return this._parseComment(this.m_iP + 4);
-    }
-    else if(this.m_iP == this.m_xml.indexOf("<![CDATA[", this.m_iP)) {
-        return this._parseCDATA  (this.m_iP + 9);
-    }
-    else if(this.m_iP == this.m_xml.indexOf("<",         this.m_iP)) {
-        return this._parseElement(this.m_iP + 1);
-    }
-    else if(this.m_iP == this.m_xml.indexOf("&",         this.m_iP)) {
-        return this._parseEntity (this.m_iP + 1);
-    }
-    else{
-        return this._parseText   (this.m_iP);
-    }
+	var token = this.m_xml.substr(this.m_iP, 9);
+	var first = token.charAt(0);
+
+	if(first == "<") {
+		var second = token.charAt(1);
+		if(second == "?") {
+				return this._parsePI (this.m_iP + 2);
+		} else if(second == "!") {
+			if(token == "<!DOCTYPE") {
+				return this._parseDTD (this.m_iP + 9);
+			} else if(token.charAt(2) == "-" && token.charAt(3) == "-") {
+				return this._parseComment(this.m_iP + 4);
+			} else if(token == "<![CDATA[") {
+				return this._parseCDATA (this.m_iP + 9);
+			}
+		} else {
+			return this._parseElement(this.m_iP + 1);
+		}
+	} else if(first == "&") {
+		return this._parseEntity (this.m_iP + 1);
+	}
+	return this._parseText (this.m_iP);
+	
+	
+//    if(this.m_xml.charAt(this.m_iP) == "<") {
+//        if(this.m_xml.charAt(this.m_iP+1) == "?") {
+//            return this._parsePI     (this.m_iP + 2);
+//        }
+//        else if(this.m_xml.charAt(this.m_iP+1) == "!") {
+//            if(this.m_xml.charAt(this.m_iP+2) == "D") {
+//                return this._parseDTD    (this.m_iP + 9);
+//            }
+//            else if(this.m_xml.charAt(this.m_iP+2) == "-") {
+//                return this._parseComment(this.m_iP + 4);
+//            	
+//            }
+//            else if(this.m_xml.charAt(this.m_iP+2) == "[") {
+//                return this._parseCDATA  (this.m_iP + 9);
+//            } else {
+//                return this._parseText   (this.m_iP);
+//            }
+//        } else {
+//        	return this._parseElement(this.m_iP + 1);
+//        }
+//    }
+//    else if(this.m_xml.charAt(this.m_iP) == "&") {
+//        return this._parseEntity (this.m_iP + 1);
+//    }
+//    else{
+//        return this._parseText   (this.m_iP);
+//    }
+
+//    if(this.m_iP == this.m_xml.indexOf("<?",        this.m_iP)) {
+//        return this._parsePI     (this.m_iP + 2);
+//    }
+//    else if(this.m_iP == this.m_xml.indexOf("<!DOCTYPE", this.m_iP)) {
+//        return this._parseDTD    (this.m_iP + 9);
+//    }
+//    else if(this.m_iP == this.m_xml.indexOf("<!--",      this.m_iP)) {
+//        return this._parseComment(this.m_iP + 4);
+//    }
+//    else if(this.m_iP == this.m_xml.indexOf("<![CDATA[", this.m_iP)) {
+//        return this._parseCDATA  (this.m_iP + 9);
+//    }
+//    else if(this.m_iP == this.m_xml.indexOf("<",         this.m_iP)) {
+//        return this._parseElement(this.m_iP + 1);
+//    }
+//    else if(this.m_iP == this.m_xml.indexOf("&",         this.m_iP)) {
+//        return this._parseEntity (this.m_iP + 1);
+//    }
+//    else{
+//        return this._parseText   (this.m_iP);
+//    }
 	
 
 }  // end function _parse
@@ -546,8 +600,32 @@ XMLP.prototype._parseElement = function(iB) {
     *********************************************************************************************************************/
     var iE, iDE, iNE, iRet;
     var iType, strN, iLast;
+    var isAttribute = false;
+    var isQuot = false;
 
-    iDE = iE = this.m_xml.indexOf(">", iB);
+		iDE = iE = -1;
+    for( var _idx = iB, _length = this.m_xml.length ; _idx < _length ; _idx++ ) {
+    	var c = this.m_xml.charAt(_idx);
+			if( isAttribute ) {
+				if( !isQuot && c == "'" ) {
+					isAttribute = false;
+				} else if ( isQuot && c == '"' ) {
+					isAttribute = false;
+				}
+			} else {
+				if( c == "'" ) {
+					isAttribute = true;
+					isQuot = false;
+				} else if ( c == '"' ) {
+					isAttribute = true;
+					isQuot = true;
+				} else if ( c == '>' ) {
+					iDE = iE = _idx;
+					break;
+				}
+			}
+    }
+    
     if(iE == -1) {
         return this._setErr(XMLP.ERR_CLOSE_ELM);
     }
@@ -691,10 +769,14 @@ XMLP.prototype._parseText = function(iB) {
         iE = this.m_xml.length;
     }
 
-    iEE = this.m_xml.indexOf("&", iB);
-    if((iEE != -1) && (iEE <= iE)) {
-        iE = iEE;
+    iEE = this.m_xml.substring(iB, iE).indexOf("&");
+    if((iEE != -1) && (iEE + iB <= iE)) {
+        iE = iEE + iB;
     }
+//    iEE = this.m_xml.indexOf("&", iB);
+//    if((iEE != -1) && (iEE <= iE)) {
+//        iE = iEE;
+//    }
 
     this._setContent(XMLP._CONT_XML, iB, iE);
 
@@ -1562,3 +1644,7 @@ function __unescapeString(str) {
   return str;
 }
 
+global["xmlw3cdom_trim"] = trim;
+global["xmlw3cdom__unescapeString"] = __unescapeString;
+global["xmlw3cdom__escapeString"] = __escapeString;
+})(window);
