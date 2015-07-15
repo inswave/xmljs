@@ -45,16 +45,15 @@
  *   (separated and top and tailed with '|'s)
  */
 function addClass(classCollectionStr, newClass) {
-  if (classCollectionStr) {
-    if (classCollectionStr.indexOf("|"+ newClass +"|") < 0) {
-      classCollectionStr += newClass + "|";
-    }
-  }
-  else {
-    classCollectionStr = "|"+ newClass + "|";
-  }
-
-  return classCollectionStr;
+	newClass = newClass +"|";
+	if (classCollectionStr) {
+		if (classCollectionStr.indexOf("|"+ newClass) < 0) {
+			classCollectionStr += newClass;
+		}
+	} else {
+		classCollectionStr = "|"+ newClass;
+	}
+	return classCollectionStr;
 }
 
 /**
@@ -119,7 +118,7 @@ DOMImplementation = function() {
 DOMImplementation.prototype.escapeString = function DOMNode__escapeString(str) {
 
   //the sax processor already has this function. Just wrap it
-  return __escapeString(str);
+  return xmlw3cdom__escapeString(str);
 };
 
 /**
@@ -134,7 +133,7 @@ DOMImplementation.prototype.escapeString = function DOMNode__escapeString(str) {
 DOMImplementation.prototype.unescapeString = function DOMNode__unescapeString(str) {
 
   //the sax processor already has this function. Just wrap it
-  return __unescapeString(str);
+  return xmlw3cdom__unescapeString(str);
 };
 
 /**
@@ -177,7 +176,23 @@ DOMImplementation.prototype.loadXML = function DOMImplementation_loadXML(xmlStr)
     parser = new XMLP(xmlStr);
   }
   catch (e) {
-    alert("Error Creating the SAX Parser. Did you include xmlsax.js or tinyxmlsax.js in your web page?\nThe SAX parser is needed to populate XML for <SCRIPT>'s W3C DOM Parser with data.");
+    console.log("Error Creating the SAX Parser. Did you include xmlsax.js or tinyxmlsax.js in your web page?\nThe SAX parser is needed to populate XML for <SCRIPT>'s W3C DOM Parser with data.");
+    var str = "";
+    for( var idx in e ) {
+      var tmp = idx;
+      if( idx.length < 15 ) {
+        tmp	= tmp + "               ";
+        tmp = tmp.substring( 0, 15 );
+      }
+      try {
+        if ( idx == "number" ) {
+          str += tmp + ":" + ( e[idx] & 0xFFFF ) + "\n";   // Prints the error code.
+        } else {
+          str += tmp + ":" + e[idx] + "\n";
+        }
+      } catch( eeee ) {}
+    }
+    console.log( str );
   }
 
   // create DOM Document
@@ -308,7 +323,7 @@ DOMImplementation.prototype._parseLoop = function DOMImplementation__parseLoop(d
 
     if (iEvt == XMLP._ELM_B) {                      // Begin-Element Event
       var pName = p.getName();                      // get the Element name
-      pName = trim(pName, true, true);              // strip spaces from Element name
+      pName = xmlw3cdom_trim(pName, true, true);              // strip spaces from Element name
 
       if (!this.namespaceAware) {
         iNode = doc.createElement(p.getName());     // create the Element
@@ -353,7 +368,7 @@ DOMImplementation.prototype._parseLoop = function DOMImplementation__parseLoop(d
 
             iNode._namespaces.setNamedItem(iNS);    // attach namespace to namespace collection
           }
-          else {  // otherwise, it is a normal attribute
+//          else {  // otherwise, it is a normal attribute
             iAttr = iNode.getAttributeNode(strName);        // if Attribute exists, use it
 
             if(!iAttr) {
@@ -366,7 +381,7 @@ DOMImplementation.prototype._parseLoop = function DOMImplementation__parseLoop(d
             if (this._isIdDeclaration(strName)) {
               iNode.id = p.getAttributeValue(i);    // cache ID for getElementById()
             }
-          }
+//          }
         }
 
         // resolve namespaceURIs for this Element
@@ -399,7 +414,7 @@ DOMImplementation.prototype._parseLoop = function DOMImplementation__parseLoop(d
 
     else if(iEvt == XMLP._ELM_EMP) {                // Empty Element Event
       pName = p.getName();                          // get the Element name
-      pName = trim(pName, true, true);              // strip spaces from Element name
+      pName = xmlw3cdom_trim(pName, true, true);              // strip spaces from Element name
 
       if (!this.namespaceAware) {
         iNode = doc.createElement(pName);           // create the Element
@@ -444,7 +459,7 @@ DOMImplementation.prototype._parseLoop = function DOMImplementation__parseLoop(d
 
             iNode._namespaces.setNamedItem(iNS);    // attach namespace to namespace collection
           }
-          else {  // otherwise, it is a normal attribute
+//          else {  // otherwise, it is a normal attribute
             iAttr = iNode.getAttributeNode(strName);        // if Attribute exists, use it
 
             if(!iAttr) {
@@ -457,7 +472,7 @@ DOMImplementation.prototype._parseLoop = function DOMImplementation__parseLoop(d
             if (this._isIdDeclaration(strName)) {
               iNode.id = p.getAttributeValue(i);    // cache ID for getElementById()
             }
-          }
+//          }
         }
 
         // resolve namespaceURIs for this Element
@@ -487,7 +502,7 @@ DOMImplementation.prototype._parseLoop = function DOMImplementation__parseLoop(d
       var pContent = p.getContent().substring(p.getContentBegin(), p.getContentEnd());
       
 	  if (!this.preserveWhiteSpace ) {
-		if (trim(pContent, true, true) == "") {
+		if (xmlw3cdom_trim(pContent, true, true) == "") {
 			pContent = ""; //this will cause us not to create the text node below
 		}
 	  }
@@ -526,7 +541,7 @@ DOMImplementation.prototype._parseLoop = function DOMImplementation__parseLoop(d
       pContent = p.getContent().substring(p.getContentBegin(), p.getContentEnd());
 
       if (!this.preserveWhiteSpace) {
-        pContent = trim(pContent, true, true);      // trim whitespace
+        pContent = xmlw3cdom_trim(pContent, true, true);      // trim whitespace
         pContent.replace(/ +/g, ' ');               // collapse multiple spaces to 1 space
       }
 
@@ -539,7 +554,7 @@ DOMImplementation.prototype._parseLoop = function DOMImplementation__parseLoop(d
       var pContent = p.getContent().substring(p.getContentBegin(), p.getContentEnd());
 
       if (!this.preserveWhiteSpace) {
-        pContent = trim(pContent, true, true);      // trim whitespace
+        pContent = xmlw3cdom_trim(pContent, true, true);      // trim whitespace
         pContent.replace(/ +/g, ' ');               // collapse multiple spaces to 1 space
       }
 
@@ -585,7 +600,7 @@ DOMImplementation.prototype._parseLoop = function DOMImplementation__parseLoop(d
 					var child = children.item(intLoop2);
 					if (child.getNodeType() == DOMNode.TEXT_NODE) {
 						var childData = child.getData();
-						childData = trim(childData, true, true);
+						childData = xmlw3cdom_trim(childData, true, true);
 						childData.replace(/ +/g, ' ');
 						child.setData(childData);
 					}
@@ -605,7 +620,7 @@ DOMImplementation.prototype._parseLoop = function DOMImplementation__parseLoop(d
 		var node = textNodesList[intLoop];
 		if (node.getParentNode() != null) {
 			var nodeData = node.getData();
-			nodeData = trim(nodeData, true, true);
+			nodeData = xmlw3cdom_trim(nodeData, true, true);
 			nodeData.replace(/ +/g, ' ');
 			node.setData(nodeData);
 		}
@@ -843,6 +858,9 @@ DOMNodeList.prototype._insertBefore = function DOMNodeList__insertBefore(newChil
     this._nodes = tmpArr.concat(this._nodes.slice(refChildIndex));
 
     this.length = this._nodes.length;            // update length
+    for( var _idx = 0 ; _idx < this.length ; _idx++ ) {
+      this[_idx] = this._nodes[_idx];
+    }
   }
 };
 
@@ -877,6 +895,9 @@ DOMNodeList.prototype._replaceChild = function DOMNodeList__replaceChild(newChil
       // simply replace node in array (links between Nodes are made at higher level)
       this._nodes[refChildIndex] = newChild;
     }
+    for( var _idx = 0 ; _idx < this.length ; _idx++ ) {
+      this[_idx] = this._nodes[_idx];
+    }
   }
 
   return ret;                                   // return replaced node
@@ -903,6 +924,9 @@ DOMNodeList.prototype._removeChild = function DOMNodeList__removeChild(refChildI
     this._nodes = tmpArr.concat(this._nodes.slice(refChildIndex +1));
 
     this.length = this._nodes.length;            // update length
+    for( var _idx = 0 ; _idx < this.length ; _idx++ ) {
+        this[_idx] = this._nodes[_idx];
+    }
   }
 
   return ret;                                   // return removed node
@@ -929,6 +953,9 @@ DOMNodeList.prototype._appendChild = function DOMNodeList__appendChild(newChild)
   }
 
   this.length = this._nodes.length;              // update length
+    for( var _idx = 0 ; _idx < this.length ; _idx++ ) {
+        this[_idx] = this._nodes[_idx];
+    }
 };
 
 /**
@@ -1069,6 +1096,9 @@ DOMNamedNodeMap.prototype.setNamedItem = function DOMNamedNodeMap_setNamedItem(a
 
   this.length = this._nodes.length;              // update length
 
+  for( var _idx = 0 ; _idx < this.length ; _idx++ ) {
+    this[_idx] = this._nodes[_idx];
+  }
   arg.ownerElement = this.parentNode;            // update ownerElement
 
   return ret;                                    // return old node or null
@@ -1193,6 +1223,9 @@ DOMNamedNodeMap.prototype.setNamedItemNS = function DOMNamedNodeMap_setNamedItem
 
   this.length = this._nodes.length;              // update length
 
+  for( var _idx = 0 ; _idx < this.length ; _idx++ ) {
+    this[_idx] = this._nodes[_idx];
+  }
   arg.ownerElement = this.parentNode;
 
 
@@ -2454,7 +2487,7 @@ DOMNode.prototype.importNode = function DOMNode_importNode(importedNode, deep) {
 DOMNode.prototype.__escapeString = function DOMNode__escapeString(str) {
 
   //the sax processor already has this function. Just wrap it
-  return __escapeString(str);
+  return xmlw3cdom__escapeString(str);
 };
 
 /**
@@ -2469,7 +2502,7 @@ DOMNode.prototype.__escapeString = function DOMNode__escapeString(str) {
 DOMNode.prototype.__unescapeString = function DOMNode__unescapeString(str) {
 
   //the sax processor already has this function. Just wrap it
-  return __unescapeString(str);
+  return xmlw3cdom__unescapeString(str);
 };
 
 
@@ -2987,7 +3020,7 @@ DOMElement.prototype.getTagName = function DOMElement_getTagName() {
  * @return : string - The Attr value as a string, or the empty string if that attribute does not have a specified value.
  */
 DOMElement.prototype.getAttribute = function DOMElement_getAttribute(name) {
-  var ret = "";
+  var ret = null;
 
   // if attribute exists, use it
   var attr = this.attributes.getNamedItem(name);
@@ -3018,7 +3051,7 @@ DOMElement.prototype.setAttribute = function DOMElement_setAttribute(name, value
     attr = this.ownerDocument.createAttribute(name);  // otherwise create it
   }
 
-  var value = new String(value);
+  var value = String(value);
 
   // test for exceptions
   if (this.ownerDocument.implementation.errorChecking) {
@@ -3146,7 +3179,7 @@ DOMElement.prototype.removeAttributeNode = function DOMElement_removeAttributeNo
  * @return : string - The Attr value as a string, or the empty string if that attribute does not have a specified value.
  */
 DOMElement.prototype.getAttributeNS = function DOMElement_getAttributeNS(namespaceURI, localName) {
-  var ret = "";
+  var ret = null;
 
   // delegate to DOMNAmedNodeMap.getNamedItemNS
   var attr = this.attributes.getNamedItemNS(namespaceURI, localName);
@@ -3181,7 +3214,7 @@ DOMElement.prototype.setAttributeNS = function DOMElement_setAttributeNS(namespa
     attr = this.ownerDocument.createAttributeNS(namespaceURI, qualifiedName);
   }
 
-  var value = new String(value);
+  var value = String(value);
 
   // test for exceptions
   if (this.ownerDocument.implementation.errorChecking) {
@@ -3431,7 +3464,7 @@ DOMAttr.prototype.setValue = function DOMAttr_setValue(value) {
  * @param  value : string - the new attribute value
  */
 DOMAttr.prototype.setNodeValue = function DOMAttr_setNodeValue(value) {
-  this.nodeValue = new String(value);
+  this.nodeValue = String(value);
   this.value     = this.nodeValue;
   this.specified = (this.value.length > 0);
 };
@@ -3507,7 +3540,7 @@ DOMNamespace.prototype.getValue = function DOMNamespace_getValue() {
  */
 DOMNamespace.prototype.setValue = function DOMNamespace_setValue(value) {
   // assign values to properties (and aliases)
-  this.nodeValue = new String(value);
+  this.nodeValue = String(value);
   this.value     = this.nodeValue;
 };
 
@@ -3593,7 +3626,7 @@ DOMCharacterData.prototype.setNodeValue = function DOMCharacterData_setNodeValue
   }
 
   // assign values to properties (and aliases)
-  this.nodeValue = new String(data);
+  this.nodeValue = String(data);
   this.data   = this.nodeValue;
 
   // update length
@@ -4054,7 +4087,7 @@ DOMProcessingInstruction.prototype.setNodeValue = function DOMProcessingInstruct
   }
 
   // assign values to properties (and aliases)
-  this.nodeValue = new String(data);
+  this.nodeValue = String(data);
   this.data = this.nodeValue;
 };
 
@@ -4114,10 +4147,10 @@ DOMDocumentFragment.prototype.toString = function DOMDocumentFragment_toString()
 ///////////////////////
 //  NOT IMPLEMENTED  //
 ///////////////////////
-DOMDocumentType    = function() { alert("DOMDocumentType.constructor(): Not Implemented"   ); };
-DOMEntity          = function() { alert("DOMEntity.constructor(): Not Implemented"         ); };
-DOMEntityReference = function() { alert("DOMEntityReference.constructor(): Not Implemented"); };
-DOMNotation        = function() { alert("DOMNotation.constructor(): Not Implemented"       ); };
+DOMDocumentType    = function() { console.log("DOMDocumentType.constructor(): Not Implemented"   ); };
+DOMEntity          = function() { console.log("DOMEntity.constructor(): Not Implemented"         ); };
+DOMEntityReference = function() { console.log("DOMEntityReference.constructor(): Not Implemented"); };
+DOMNotation        = function() { console.log("DOMNotation.constructor(): Not Implemented"       ); };
 
 
 Strings = new Object()
@@ -4187,3 +4220,13 @@ Strings.getColumnNumber = function Strings_getColumnNumber(strD, iP) {
 StringBuffer = function() {this._a=new Array();};
 StringBuffer.prototype.append = function StringBuffer_append(d){this._a[this._a.length]=d;};
 StringBuffer.prototype.toString = function StringBuffer_toString(){return this._a.join("");};
+
+if(!window.console) {
+  var names = ["log", "debug", "info", "warn", "error", "assert", "dir", "dirxml",
+    "group", "groupEnd", "time", "timeEnd", "count", "trace", "profile", "profileEnd"];
+
+  window.console = {};
+  for (var i = 0; i < names.length; ++i) {
+    window.console[names[i]] = function() {};
+  }
+}
