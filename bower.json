@@ -10,6 +10,15 @@
   "ignore": [
     "**/.*",
     "*.md",
+    "*.html",
+    "*.ico",
+    "jsTools",
+    "jsXMLParser",
+    "pre-builtProxyServers",
+    "sampleApplications",
+    "testSuites",
+    "toolSamples",
+    "website",
     "Gruntfile.js",
     "package.json"
   ],
