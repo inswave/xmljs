@@ -1,0 +1,20 @@
+{
+  "name": "xmljs",
+  "version": "3.1.0",
+  "main": [
+    "dist/js/3.1.0/xmldom.min.js",
+    "dist/js/3.1.0/xmlsax.min.js",
+    "dist/js/3.1.0/xmlw3cdom.min.js"
+  ],
+  "license": "LGPLv2.1",
+  "ignore": [
+    "**/.*",
+    "*.md",
+    "Gruntfile.js",
+    "package.json"
+  ],
+  "dependencies": {},
+  "keywords": [
+    "XML for script"
+  ]
+}
